@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title || 'Code Sharing App' %></title>
+    <meta name="description" content="<%= description || 'Share code snippets across devices instantly' %>">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-dark.min.css" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>📝 Code Sharing App</h1>
+                    <span class="tagline">Cross-device code sharing</span>
+                </div>
+                <div class="status-indicators">
+                    <div class="online-status" id="onlineStatus">
+                        <i data-lucide="wifi"></i>
+                        <span>Online</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="app-container">
+            <!-- Loading Screen -->
+            <div id="loadingScreen" class="loading-screen">
+                <div class="loading-content">
+                    <div class="spinner"></div>
+                    <p>Loading files...</p>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="error-message hidden">
+                <div class="error-content">
+                    <i data-lucide="alert-circle"></i>
+                    <span id="errorText"></span>
+                    <button onclick="hideError()" class="btn-close">×</button>
+                </div>
+            </div>
+
+            <!-- Main App Layout -->
+            <div id="appLayout" class="app-layout hidden">
+                <!-- Sidebar -->
+                <aside class="sidebar">
+                    <div class="sidebar-header">
+                        <h2>Files</h2>
+                        <button id="createFileBtn" class="btn btn-primary" title="Create new file">
+                            <i data-lucide="plus"></i>
+                        </button>
+                    </div>
+
+                    <!-- Create File Form -->
+                    <div id="createFileForm" class="create-file-form hidden">
+                        <form onsubmit="createFile(event)">
+                            <input 
+                                type="text" 
+                                id="newFileName" 
+                                placeholder="filename.ext" 
+                                class="form-input"
+                                required
+                            >
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Create</button>
+                                <button type="button" onclick="hideCreateForm()" class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Files List -->
+                    <div id="filesList" class="files-list">
+                        <!-- Files will be loaded here -->
+                    </div>
+                </aside>
+
+                <!-- Main Editor -->
+                <main class="editor-container">
+                    <!-- Editor Header -->
+                    <div id="editorHeader" class="editor-header">
+                        <div class="file-info">
+                            <h3 id="currentFileName">Select a file</h3>
+                            <span id="currentFileLanguage" class="language-badge"></span>
+                        </div>
+                        <div class="editor-actions">
+                            <button id="previewToggle" class="btn btn-secondary" onclick="togglePreview()">
+                                <i data-lucide="eye"></i>
+                                Preview
+                            </button>
+                            <button id="copyBtn" class="btn btn-secondary" onclick="copyToClipboard()">
+                                <i data-lucide="copy"></i>
+                                Copy
+                            </button>
+                            <button id="downloadBtn" class="btn btn-secondary" onclick="downloadFile()">
+                                <i data-lucide="download"></i>
+                                Download
+                            </button>
+                            <button id="saveBtn" class="btn btn-primary" onclick="saveFile()" disabled>
+                                <i data-lucide="save"></i>
+                                <span id="saveText">Save</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Editor Content -->
+                    <div class="editor-content">
+                        <!-- No File Selected -->
+                        <div id="noFileSelected" class="no-file-selected">
+                            <i data-lucide="file-text"></i>
+                            <p>Select a file to start editing</p>
+                        </div>
+
+                        <!-- Text Editor -->
+                        <textarea 
+                            id="codeEditor" 
+                            class="code-editor hidden"
+                            placeholder="Start typing your code..."
+                            spellcheck="false"
+                        ></textarea>
+
+                        <!-- Preview Mode -->
+                        <div id="codePreview" class="code-preview hidden">
+                            <pre><code id="previewCode"></code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Editor Footer -->
+                    <div id="editorFooter" class="editor-footer">
+                        <div class="stats">
+                            <span id="lineCount">Lines: 0</span>
+                            <span id="charCount">Characters: 0</span>
+                            <span id="currentLanguage">Language: text</span>
+                        </div>
+                        <div class="file-date">
+                            <span id="createdDate"></span>
+                        </div>
+                    </div>
+                </main>
+            </div>
+
+            <!-- Mobile File Selector -->
+            <div class="mobile-file-selector">
+                <select id="mobileFileSelect" class="form-input" onchange="selectMobileFile()">
+                    <option value="">Select a file</option>
+                </select>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-go.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-rust.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-php.min.js"></script>
+    <script src="/js/app.js"></script>
+    
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+        
+        // Online/offline status
+        function updateOnlineStatus() {
+            const statusEl = document.getElementById('onlineStatus');
+            if (navigator.onLine) {
+                statusEl.innerHTML = '<i data-lucide="wifi"></i><span>Online</span>';
+                statusEl.className = 'online-status online';
+            } else {
+                statusEl.innerHTML = '<i data-lucide="wifi-off"></i><span>Offline</span>';
+                statusEl.className = 'online-status offline';
+            }
+            lucide.createIcons();
+        }
+        
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+        updateOnlineStatus();
+    </script>
+</body>
+</html>
