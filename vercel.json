@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "name": "code-sharing-app",
+  "builds": [
+    {
+      "src": "./server.js",
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "50mb",
+        "includeFiles": ["routes/**", "storage.js", "views/**", "public/**"]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "./server.js",
+      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    },
+    {
+      "src": "/css/(.*)",
+      "dest": "/public/css/$1"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "./server.js"
+    }
+  ],
+  "functions": {
+    "./server.js": {
+      "maxDuration": 30
+    }
+  }
+}
