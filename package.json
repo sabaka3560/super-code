@@ -2,10 +2,10 @@
   "name": "code-sharing-app",
   "version": "1.0.0",
   "description": "Cross-device code",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "build": "echo 'No build step required'",
     "vercel-build": "echo 'No build step required'"
   },
